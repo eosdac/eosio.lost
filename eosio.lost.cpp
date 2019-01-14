@@ -2,17 +2,21 @@
 
 #include "eosio.lost.hpp"
 
-void lostcontract::add(const ethereum_address& ethereum_address, name eos_address) {
-    /*require_auth(_self);
+void lostcontract::add(name account, string eth_address, asset value) {
+    require_auth(_self);
 
-    eosio_assert(is_account(eos_address), "Address does not exist");
+    whitelist_table whitelist(_self, _self.value);
 
-    eosio_assert(ethereum_address.length() == 42, "Ethereum address should have exactly 42 characters");
+	eosio_assert(is_account(account), "Account does not exist");
 
-    update_address(ethereum_address, [&](auto& address) {
-        address.ethereum_address = ethereum_address;
-        address.balance = balance;
-    });*/
+    auto existing = whitelist.find(account.value);
+    eosio_assert(existing == whitelist.end(), "Address is already on the whitelist");
+
+        whitelist.emplace(_self, [&](whitelist_info &w){
+            w.account  = account;
+            w.eth_address = eth_address;
+            w.value = value;
+    });
 }
 
 
@@ -137,11 +141,15 @@ void lostcontract::verify(std::vector<char> sig, name account, public_key newpub
         require_auth(rampayer);
 
         verifications_table verifications(_self, _self.value);
+        whitelist_table whitelist(_self, _self.value);
 
         eosio_assert(is_account(account), "Account does not exist");
 
-        auto verification = verifications.find(account.value);
+        // Disable for testing
+//        auto whitelisted = whitelist.find(account.value);
+//        eosio_assert(whitelisted != whitelist.end(), "Account is not whitelisted");
 
+        auto verification = verifications.find(account.value);
         eosio_assert(verification == verifications.end(), "Account already verified");
 
         verifications.emplace(rampayer, [&](verify_info &v){

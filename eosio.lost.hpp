@@ -1,6 +1,7 @@
 #include <eosiolib/eosio.hpp>
 #include <eosiolib/multi_index.hpp>
 #include <eosiolib/transaction.hpp>
+#include <eosiolib/asset.hpp>
 
 using namespace eosio;
 using namespace std;
@@ -35,11 +36,27 @@ private:
 	};
 	typedef multi_index<"verified"_n, verify_info> verifications_table;
 
+
+
+	TABLE whitelist_info{
+			name              account;
+			string            eth_address;
+			asset             value;
+
+			uint64_t primary_key() const { return account.value; }
+
+			EOSLIB_SERIALIZE(whitelist_info,
+							(account)
+							(eth_address)
+							(value))
+	};
+	typedef multi_index<"whitelist"_n, whitelist_info> whitelist_table;
+
 public:
 
 	using contract::contract;
 
-	ACTION add(const ethereum_address &ethereum_address, name eos_address);
+	ACTION add(name address, string eth_address, asset value);
 
 	ACTION propose(name claimer);
 
