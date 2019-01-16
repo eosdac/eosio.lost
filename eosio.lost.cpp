@@ -1,5 +1,3 @@
-
-
 #include "eosio.lost.hpp"
 
 void lostcontract::add(name account, string eth_address, asset value) {
@@ -152,6 +150,51 @@ void lostcontract::verify(std::vector<char> sig, name account, public_key newpub
     auto verification = verifications.find(account.value);
     eosio_assert(verification == verifications.end(), "Account already verified");
 
+    /////////////////////////
+    // Verify signature
+    
+    // ETH signatures sign the keccak256 hash of a message so we have to do the same
+    sha3_ctx shactx;
+    capi_checksum256 msghash;
+    unsigned char message[26] = "I lost my EOS genesis key";
+    rhash_keccak_256_init(&shactx);
+    rhash_keccak_update(&shactx, message, 25); // ignore the null terminator at the end of the string
+    rhash_keccak_final(&shactx, msghash.hash);
+
+    // Recover the compressed ETH public key from the message and signature
+    uint8_t compressed_pubkey[34];
+    uint8_t pubkey[64];
+    auto res = recover_key( 
+        &msghash, 
+        sig.data(),
+        sig.size(),
+        (char*)compressed_pubkey,
+        34
+    );
+    eosio_assert(res == 34, "Recover key failed");
+
+    // Decompress the ETH pubkey
+    uECC_decompress(compressed_pubkey+1, pubkey, uECC_secp256k1());
+
+    // Calculate the hash of the pubkey
+    capi_checksum256 pubkeyhash;
+    rhash_keccak_256_init(&shactx);
+    rhash_keccak_update(&shactx, pubkey, 64);
+    rhash_keccak_final(&shactx, pubkeyhash.hash);
+
+    // last 20 bytes of the hashed pubkey = ETH address
+    uint8_t eth_address[20];
+    memcpy(eth_address, pubkeyhash.hash + 12, 20);
+
+    // convert to human readable form
+    std::string calculatedEthAddress = "0x" + bytetohex(eth_address, 20);
+
+    // verify ETH key matches account
+    auto white_it = whitelist.find( account.value );
+    eosio_assert( white_it != whitelist.end(), "Account is not in the whitelist");
+    eosio_assert( white_it->eth_address == calculatedEthAddress, "Message was not properly signed by the ETH key for the account" );
+
+    // Once all checks have passed, store the key change information
     verifications.emplace(rampayer, [&](verify_info &v){
         v.claimer  = account;
         v.added    = time_point_sec(now());
@@ -182,6 +225,19 @@ void lostcontract::clear(){
     while (itr != verifications.end()){
         itr = verifications.erase(itr);
     }
+}
+
+std::string lostcontract::bytetohex(unsigned char *data, int len)
+{
+    constexpr char hexmap[] = {'0', '1', '2', '3', '4', '5', '6', '7',
+                               '8', '9', 'a', 'b', 'c', 'd', 'e', 'f'};
+
+    std::string s(len * 2, ' ');
+    for (int i = 0; i < len; ++i) {
+        s[2 * i]     = hexmap[(data[i] & 0xF0) >> 4];
+        s[2 * i + 1] = hexmap[data[i] & 0x0F];
+    }
+    return s;
 }
 
 

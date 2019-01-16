@@ -1,7 +1,12 @@
 #include <eosiolib/eosio.hpp>
+#include <eosiolib/crypto.hpp>
 #include <eosiolib/multi_index.hpp>
 #include <eosiolib/transaction.hpp>
 #include <eosiolib/asset.hpp>
+
+#define USE_KECCAK
+#include "sha3/sha3.c"
+#include "ecc/uECC.c"
 
 using namespace eosio;
 using namespace std;
@@ -65,6 +70,10 @@ public:
     ACTION reset(name claimer);
 
     ACTION clear();
+
+private:
+
+    std::string bytetohex(unsigned char *data, int len);
 };
 
 
