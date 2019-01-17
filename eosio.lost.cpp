@@ -1,4 +1,5 @@
 #include "eosio.lost.hpp"
+#include <eosiolib/print.hpp>
 
 void lostcontract::add(name account, string eth_address, asset value) {
     require_auth(_self);
@@ -187,12 +188,20 @@ void lostcontract::verify(std::vector<char> sig, name account, public_key newpub
     memcpy(eth_address, pubkeyhash.hash + 12, 20);
 
     // convert to human readable form
-    std::string calculatedEthAddress = "0x" + bytetohex(eth_address, 20);
+    std::string calculated_eth_address = "0x" + bytetohex(eth_address, 20);
 
     // verify ETH key matches account
     auto white_it = whitelist.find( account.value );
     eosio_assert( white_it != whitelist.end(), "Account is not in the whitelist");
-    eosio_assert( white_it->eth_address == calculatedEthAddress, "Message was not properly signed by the ETH key for the account" );
+
+    // verify calculated address matches whitelist
+    std::string lowercase_whitelist = white_it->eth_address;
+    std::for_each(lowercase_whitelist.begin(), lowercase_whitelist.end(), [](char & c){
+        c = tolower(c);
+    });
+
+    print(calculated_eth_address.c_str(), ":", lowercase_whitelist.c_str());
+    eosio_assert( calculated_eth_address == lowercase_whitelist, "Message was not properly signed by the ETH key for the account" );
 
     // Once all checks have passed, store the key change information
     verifications.emplace(rampayer, [&](verify_info &v){

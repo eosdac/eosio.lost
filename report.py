@@ -58,18 +58,18 @@ else:
     rampayer = pusher
 
 
-#while True:
+while True:
 
-block_id = req.get(url_for('/v1/chain/get_info')).json()['last_irreversible_block_id']
-ref_block_num, ref_block_prefix = get_tapos_info(block_id)
+    block_id = req.get(url_for('/v1/chain/get_info')).json()['last_irreversible_block_id']
+    ref_block_num, ref_block_prefix = get_tapos_info(block_id)
 
-msg = "I lost my EOS genesis key"
-msghash = keccak_256(msg).digest()
+    msg = "I lost my EOS genesis key"
+    msghash = keccak_256(msg).digest()
 
-v, r, s = ecdsa_raw_sign(msghash, encode_privkey(priv,'hex').decode('hex'))
-signature = '00%02x%064x%064x' % (v,r,s)
+    v, r, s = ecdsa_raw_sign(msghash, encode_privkey(priv,'hex').decode('hex'))
+    signature = '00%02x%064x%064x' % (v,r,s)
+
 print("Signature: {0}".format(signature))
-
 if is_canonical(bytearray(signature.decode('hex'))):
     print("Signature is canonical")
 else:
@@ -84,8 +84,7 @@ action_args = json.dumps([
 print(action_args)
 
 with open(os.devnull, 'w') as devnull:
-  #cmd = ["cleos","-u", API_URL, "push", "action", "eosio.lost", "verify", action_args, "-p", pusher]
-  cmd = ["cleos", "push", "action", "eosio.lost", "verify", action_args, "-p", pusher]
+  cmd = ["cleos","-u", API_URL, "push", "action", "eosio.lost", "verify", action_args, "-p", pusher]
   p = Popen(cmd)
   output, err = p.communicate("")
 
