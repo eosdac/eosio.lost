@@ -3,6 +3,7 @@
 #include <eosiolib/multi_index.hpp>
 #include <eosiolib/transaction.hpp>
 #include <eosiolib/asset.hpp>
+#include <eosiolib/permission.h>
 
 #define USE_KECCAK
 #include "sha3/sha3.c"
@@ -29,7 +30,7 @@ private:
             name              claimer;
             time_point_sec    added;
             public_key        new_key;
-            uint8_t           proposed;
+            uint8_t           updated;
 
             uint64_t primary_key() const { return claimer.value; }
 
@@ -37,7 +38,7 @@ private:
                             (claimer)
                             (added)
                             (new_key)
-                            (proposed))
+                            (updated))
     };
     typedef multi_index<"verified"_n, verify_info> verifications_table;
 
@@ -57,17 +58,25 @@ private:
     };
     typedef multi_index<"whitelist"_n, whitelist_info> whitelist_table;
 
+    void assert_unused(name account);
+
 public:
 
     using contract::contract;
 
     ACTION add(name address, string eth_address, asset value);
 
-    ACTION propose(name claimer);
+    ACTION remove(name account);
+
+    ACTION updateauth(name claimer);
 
     ACTION verify(std::vector<char> sig, name account, public_key newpubkey, name rampayer);
 
     ACTION reset(name claimer);
+
+    ACTION useaccount(name claimer);
+
+    ACTION notify(name claimer, string msg);
 
     ACTION clear();
 

@@ -11,17 +11,30 @@ void lostcontract::add(name account, string eth_address, asset value) {
     auto existing = whitelist.find(account.value);
     eosio_assert(existing == whitelist.end(), "Address is already on the whitelist");
 
-    whitelist.emplace(_self, [&](whitelist_info &w){
-        w.account  = account;
+    whitelist.emplace(_self, [&](whitelist_info &w) {
+        w.account = account;
         w.eth_address = eth_address;
         w.value = value;
     });
 }
 
+void lostcontract::remove(name account) {
+    require_auth(_self);
 
-void lostcontract::propose(name claimer) {
+    whitelist_table whitelist(_self, _self.value);
+
+    eosio_assert(is_account(account), "Account does not exist");
+
+    auto existing = whitelist.find(account.value);
+    eosio_assert(existing != whitelist.end(), "Address is not on the whitelist");
+
+    whitelist.erase(existing);
+}
+
+
+void lostcontract::updateauth(name claimer) {
     verifications_table verifications(_self, _self.value);
-    producers_table producers("eosio"_n, "eosio"_n.value);
+    whitelist_table whitelist(_self, _self.value);
 
     auto verification = verifications.find(claimer.value);
 
@@ -30,20 +43,17 @@ void lostcontract::propose(name claimer) {
     time_point_sec deadline{now() - WAITING_PERIOD};
 
     eosio_assert(verification->added < deadline, "Thirty day waiting period has not passed");
-    eosio_assert(verification->proposed == 0, "Already proposed this lost key");
+    eosio_assert(verification->updated == 0, "Already updated this lost key");
+    eosio_assert(is_account(claimer), "Account does not exist");
+
+    auto whitelisted = whitelist.get(claimer.value, "Account is not whitelisted");
+
+    // Make sure the account hasn't been used
+    assert_unused(claimer);
 
 
-    // Create transaction to be proposed
-
-    time_point_sec expire{now() + PROPOSAL_EXPIRY};
-
-    transaction trx;
-    trx.expiration = expire;
-    trx.ref_block_num = 0;
-    trx.ref_block_prefix = 0;
-
-    vector<eosiosystem::key_weight> keys;
-    eosiosystem::key_weight kw {
+    vector <eosiosystem::key_weight> keys;
+    eosiosystem::key_weight kw{
             .key = verification->new_key,
             .weight = (uint16_t) 1,
     };
@@ -56,104 +66,50 @@ void lostcontract::propose(name claimer) {
             .waits = {}
     };
 
-    action act_active = action(permission_level{verification->claimer, "owner"_n},
-                               "eosio"_n, "updateauth"_n,
-                               std::make_tuple(
-                                       verification->claimer,
-                                       "active"_n,
-                                       "owner"_n,
-                                       new_authority
-                               ));
-
-    action act_owner = action(permission_level{verification->claimer, "owner"_n},
-                              "eosio"_n, "updateauth"_n,
-                              std::make_tuple(
-                                      verification->claimer,
-                                      "owner"_n,
-                                      name{0},
-                                      new_authority
-                              ));
-
-    trx.actions.push_back(act_active);
-    trx.actions.push_back(act_owner);
-
-
-
-
-    // create a wrap transaction
-
-    transaction wrap;
-    wrap.expiration = expire;
-    wrap.ref_block_num = 0;
-    wrap.ref_block_prefix = 0;
-    vector<permission_level> perms;
-    perms.push_back(permission_level{"eosio"_n, "active"_n});
-    perms.push_back(permission_level{"eosio.wrap"_n, "active"_n});
-    wrap.actions.push_back(action(perms,
-                                  "eosio.wrap"_n, "exec"_n,
-                                  std::make_tuple(
-                                          "eosio"_n,
-                                          trx
-                                  )));
-
-
-
-
-    // Create the msig inline from here
-    // Get the top 30 bps for the requested list
-
-    vector<permission_level> requested;
-    auto by_votes = producers.get_index<"prototalvote"_n>();
-    auto prod_itr = by_votes.begin();
-
-//        requested.push_back(permission_level{_self, "active"_n});
-
-    if (prod_itr == by_votes.end()){
-        // testing purposes for unactivated chains
-        requested.push_back(permission_level{"eosio"_n, "active"_n});
-    }
-    else {
-        for (uint8_t i = 0;i<30;i++){
-            requested.push_back(permission_level{prod_itr->owner, "active"_n});
-            prod_itr++;
-        }
-    }
-
-    action(permission_level{_self, "active"_n},
-           "eosio.msig"_n, "propose"_n,
+    action(permission_level{verification->claimer, "owner"_n},
+           "eosio"_n, "updateauth"_n,
            std::make_tuple(
-                   _self, // proposer
-                   verification->claimer, // proposal name
-                   requested,  // requested permissions
-                   wrap  // transaction
+                   verification->claimer,
+                   "active"_n,
+                   "owner"_n,
+                   new_authority
            )).send();
 
+    action(permission_level{verification->claimer, "owner"_n},
+           "eosio"_n, "updateauth"_n,
+           std::make_tuple(
+                   verification->claimer,
+                   "owner"_n,
+                   name{0},
+                   new_authority
+           )).send();
 
 
     // Mark this verification as proposed
     verifications.modify(verification, same_payer, [&](verify_info &v){
-        v.proposed = 1;
+        v.updated = 1;
     });
 }
 
+
 void lostcontract::verify(std::vector<char> sig, name account, public_key newpubkey, name rampayer) {
     require_auth(rampayer);
+    require_recipient(account);
 
     verifications_table verifications(_self, _self.value);
     whitelist_table whitelist(_self, _self.value);
 
     eosio_assert(is_account(account), "Account does not exist");
 
-    // Disable for testing
-//        auto whitelisted = whitelist.find(account.value);
-//        eosio_assert(whitelisted != whitelist.end(), "Account is not whitelisted");
+    auto whitelisted = whitelist.get(account.value, "Account is not whitelisted");
 
     auto verification = verifications.find(account.value);
     eosio_assert(verification == verifications.end(), "Account already verified");
 
+
     /////////////////////////
     // Verify signature
-    
+
     // ETH signatures sign the keccak256 hash of a message so we have to do the same
     sha3_ctx shactx;
     capi_checksum256 msghash;
@@ -165,8 +121,8 @@ void lostcontract::verify(std::vector<char> sig, name account, public_key newpub
     // Recover the compressed ETH public key from the message and signature
     uint8_t compressed_pubkey[34];
     uint8_t pubkey[64];
-    auto res = recover_key( 
-        &msghash, 
+    auto res = recover_key(
+        &msghash,
         sig.data(),
         sig.size(),
         (char*)compressed_pubkey,
@@ -208,8 +164,32 @@ void lostcontract::verify(std::vector<char> sig, name account, public_key newpub
         v.claimer  = account;
         v.added    = time_point_sec(now());
         v.new_key  = newpubkey;
-        v.proposed = 0;
+        v.updated  = 0;
     });
+
+    string msg = "Someone is trying to reset your EOS private key";
+    action(permission_level{_self, "active"_n},
+           _self, "notify"_n,
+           std::make_tuple(
+                   account,
+                   msg
+           )).send();
+
+}
+
+void lostcontract::useaccount(name claimer){
+    require_auth(claimer);
+}
+
+void lostcontract::notify(name claimer, string msg){
+    require_auth(_self);
+    require_recipient(claimer);
+
+    verifications_table verifications(_self, _self.value);
+
+    eosio_assert(is_account(claimer), "Account does not exist");
+
+    auto verification = verifications.get(claimer.value, "Account is not verified, will not notify");
 }
 
 void lostcontract::reset(name claimer){
@@ -221,7 +201,7 @@ void lostcontract::reset(name claimer){
     eosio_assert(verification != verifications.end(), "Account not verified");
 
     verifications.modify(verification, same_payer, [&](verify_info &v){
-        v.proposed = 0;
+        v.updated = 0;
     });
 }
 
@@ -236,8 +216,18 @@ void lostcontract::clear(){
     }
 }
 
-std::string lostcontract::bytetohex(unsigned char *data, int len)
-{
+void lostcontract::assert_unused(name account) {
+    int64_t last_used_a = get_permission_last_used(account.value, "active"_n.value);
+    print("Active last used ", last_used_a);
+    int64_t last_used_o = get_permission_last_used(account.value, "owner"_n.value);
+    print(" Owner last used ", last_used_o);
+    int64_t c_time = get_account_creation_time(account.value);
+    print(" Account created ", c_time);
+
+    eosio_assert(last_used_a == c_time && last_used_o == c_time, "EOS account has been used to authorise transactions");
+}
+
+std::string lostcontract::bytetohex(unsigned char *data, int len) {
     constexpr char hexmap[] = {'0', '1', '2', '3', '4', '5', '6', '7',
                                '8', '9', 'a', 'b', 'c', 'd', 'e', 'f'};
 
@@ -251,5 +241,5 @@ std::string lostcontract::bytetohex(unsigned char *data, int len)
 
 
 EOSIO_DISPATCH( lostcontract,
-(add)(propose)(verify)(reset)(clear)
+(add)(updateauth)(verify)(reset)(clear)(useaccount)(notify)
 )
