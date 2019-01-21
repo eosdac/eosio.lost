@@ -113,9 +113,8 @@ void lostcontract::verify(std::vector<char> sig, name account, public_key newpub
     // ETH signatures sign the keccak256 hash of a message so we have to do the same
     sha3_ctx shactx;
     capi_checksum256 msghash;
-    char common[26] = "I lost my EOS genesis key";
     char tmpmsg[128];
-    sprintf(tmpmsg, "%u,%u,%s", tapos_block_num(), tapos_block_prefix(), common);
+    sprintf(tmpmsg, "%u,%u,I lost my EOS genesis key", tapos_block_num(), tapos_block_prefix());
 
     //Add prefix and length of signed message
     char message[128];
