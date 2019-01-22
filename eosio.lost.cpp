@@ -224,11 +224,8 @@ void lostcontract::clear(){
 
 void lostcontract::assert_unused(name account) {
     int64_t last_used_a = get_permission_last_used(account.value, "active"_n.value);
-    print("Active last used ", last_used_a);
     int64_t last_used_o = get_permission_last_used(account.value, "owner"_n.value);
-    print(" Owner last used ", last_used_o);
     int64_t c_time = get_account_creation_time(account.value);
-    print(" Account created ", c_time);
 
     eosio_assert(last_used_a == c_time && last_used_o == c_time, "EOS account has been used to authorise transactions");
 }
