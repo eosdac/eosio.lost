@@ -1,0 +1,25 @@
+{
+  "name": "eosio.lost",
+  "version": "1.0.0",
+  "description": "",
+  "main": "flag-hacked-eth.js",
+  "dependencies": {
+    "cheerio": "^1.0.0-rc.2",
+    "node-fetch": "^2.3.0",
+    "web3": "^1.0.0-beta.37"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/LibertyBlock/eosio.lost.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/LibertyBlock/eosio.lost/issues"
+  },
+  "homepage": "https://github.com/LibertyBlock/eosio.lost#readme"
+}
