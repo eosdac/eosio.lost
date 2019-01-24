@@ -132,7 +132,7 @@ void lostcontract::verify(std::vector<char> sig, name account, public_key newpub
     sha3_ctx shactx;
     capi_checksum256 msghash;
     char tmpmsg[128];
-    sprintf(tmpmsg, "%u,%u,I lost my EOS genesis key", tapos_block_num(), tapos_block_prefix());
+    sprintf(tmpmsg, "%u,%u,I lost my EOS genesis key and I request a key reset to %s", tapos_block_num(), tapos_block_prefix(), b58);
 
     //Add prefix and length of signed message
     char message[128];
