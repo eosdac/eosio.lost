@@ -191,7 +191,10 @@ void lostcontract::verify(std::vector<char> sig, name account, public_key newpub
         v.updated  = 0;
     });
 
-    string msg = "Someone is trying to reset your EOS private key";
+
+    string msg = "This account has been scheduled for a key swap in 30 days by the holder of the Ethereum private key\
+ associated with it. To cancel the swap, prove your ownership of this account by authorizing any transaction within\
+ 30 days.";
     action(permission_level{_self, "active"_n},
            _self, "notify"_n,
            std::make_tuple(
@@ -242,11 +245,8 @@ void lostcontract::clear(){
 
 void lostcontract::assert_unused(name account) {
     int64_t last_used_a = get_permission_last_used(account.value, "active"_n.value);
-    print("Active last used ", last_used_a);
     int64_t last_used_o = get_permission_last_used(account.value, "owner"_n.value);
-    print(" Owner last used ", last_used_o);
     int64_t c_time = get_account_creation_time(account.value);
-    print(" Account created ", c_time);
 
     eosio_assert(last_used_a == c_time && last_used_o == c_time, "EOS account has been used to authorise transactions");
 }
