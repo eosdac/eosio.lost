@@ -124,6 +124,8 @@ void lostcontract::verify(std::vector<char> sig, name account, public_key newpub
     auto verification = verifications.find(account.value);
     eosio_assert(verification == verifications.end(), "Account already verified");
 
+    // Make sure the account hasn't been used
+    assert_unused(account);
 
     /////////////////////////
     // Verify signature
@@ -245,8 +247,14 @@ void lostcontract::clear(){
 
 void lostcontract::assert_unused(name account) {
     int64_t last_used_a = get_permission_last_used(account.value, "active"_n.value);
+//    print(" last_used_a ");
+//    print(last_used_a);
     int64_t last_used_o = get_permission_last_used(account.value, "owner"_n.value);
+//    print(" last_used_o ");
+//    print(last_used_o);
     int64_t c_time = get_account_creation_time(account.value);
+//    print(" c_time ");
+//    print(c_time);
 
     eosio_assert(last_used_a == c_time && last_used_o == c_time, "EOS account has been used to authorise transactions");
 }
