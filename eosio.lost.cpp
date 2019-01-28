@@ -2,7 +2,6 @@
 #include <eosiolib/print.hpp>
 #include "trezor-crypto/base58.c"
 #include "trezor-crypto/memzero.c"
-#include "trezor-crypto/ripemd160.c"
 
 void lostcontract::add(name account, string eth_address, asset value) {
     require_auth(_self);
@@ -101,10 +100,9 @@ void lostcontract::verify(std::vector<char> sig, name account, public_key newpub
     unsigned char to_encode[37];
     memcpy(to_encode, pkeycopy.data.data(), 33);
 
-    // add ripemd160 checksum to end of key
-    uint8_t hash_output[20];
-    ripemd160((uint8_t *)pkeycopy.data.begin(), 33, hash_output);
-    memcpy(to_encode + 33, hash_output, 4);
+    // CDT ripemd160
+    checksum160 checksum = ripemd160((const char *)pkeycopy.data.begin(), 33);
+    memcpy(to_encode + 33, checksum.extract_as_byte_array().data(), 4);
 
     // convert to base58
     char b58[51];
