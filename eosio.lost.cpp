@@ -100,7 +100,7 @@ void lostcontract::verify(std::vector<char> sig, name account, public_key newpub
     unsigned char to_encode[37];
     memcpy(to_encode, pkeycopy.data.data(), 33);
 
-    // CDT ripemd160
+    // Calculate and concatenate checksum
     checksum160 checksum = ripemd160((const char *)pkeycopy.data.begin(), 33);
     memcpy(to_encode + 33, checksum.extract_as_byte_array().data(), 4);
 
