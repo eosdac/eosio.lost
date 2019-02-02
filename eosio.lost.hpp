@@ -44,19 +44,8 @@ private:
 
 
 
-    TABLE whitelist_info{
-            name              account;
-            string            eth_address;
-            asset             value;
+#include "whitelist/defs.hpp"
 
-            uint64_t primary_key() const { return account.value; }
-
-            EOSLIB_SERIALIZE(whitelist_info,
-                            (account)
-                            (eth_address)
-                            (value))
-    };
-    typedef multi_index<"whitelist"_n, whitelist_info> whitelist_table;
 
     void assert_unused(name account);
     void assert_whitelisted(name account);
