@@ -4,40 +4,9 @@
 #include "trezor-crypto/memzero.c"
 #include "trezor-crypto/ripemd160.c"
 
-void lostcontract::add(name account, string eth_address, asset value) {
-    require_auth(_self);
-
-    whitelist_table whitelist(_self, _self.value);
-
-    eosio_assert(is_account(account), "Account does not exist");
-
-    auto existing = whitelist.find(account.value);
-    eosio_assert(existing == whitelist.end(), "Address is already on the whitelist");
-
-    whitelist.emplace(_self, [&](whitelist_info &w) {
-        w.account = account;
-        w.eth_address = eth_address;
-        w.value = value;
-    });
-}
-
-void lostcontract::remove(name account) {
-    require_auth(_self);
-
-    whitelist_table whitelist(_self, _self.value);
-
-    eosio_assert(is_account(account), "Account does not exist");
-
-    auto existing = whitelist.find(account.value);
-    eosio_assert(existing != whitelist.end(), "Address is not on the whitelist");
-
-    whitelist.erase(existing);
-}
-
 
 void lostcontract::updateauth(name claimer) {
     verifications_table verifications(_self, _self.value);
-    whitelist_table whitelist(_self, _self.value);
 
     auto verification = verifications.find(claimer.value);
 
@@ -49,7 +18,7 @@ void lostcontract::updateauth(name claimer) {
     eosio_assert(verification->updated == 0, "Already updated this lost key");
     eosio_assert(is_account(claimer), "Account does not exist");
 
-    auto whitelisted = whitelist.get(claimer.value, "Account is not whitelisted");
+    assert_whitelisted(claimer);
 
     // Make sure the account hasn't been used
     assert_unused(claimer);
@@ -115,14 +84,14 @@ void lostcontract::verify(std::vector<char> sig, name account, public_key newpub
     require_recipient(account);
 
     verifications_table verifications(_self, _self.value);
-    whitelist_table whitelist(_self, _self.value);
 
     eosio_assert(is_account(account), "Account does not exist");
 
-    auto whitelisted = whitelist.get(account.value, "Account is not whitelisted");
 
     auto verification = verifications.find(account.value);
     eosio_assert(verification == verifications.end(), "Account already verified");
+
+    assert_whitelisted(account);
 
 
     /////////////////////////
@@ -171,6 +140,7 @@ void lostcontract::verify(std::vector<char> sig, name account, public_key newpub
     std::string calculated_eth_address = "0x" + bytetohex(eth_address, 20);
 
     // verify ETH key matches account
+    whitelist_table whitelist(name(WHITELIST_CONTRACT), _self.value);
     auto white_it = whitelist.find( account.value );
     eosio_assert( white_it != whitelist.end(), "Account is not in the whitelist");
 
@@ -251,6 +221,11 @@ void lostcontract::assert_unused(name account) {
     eosio_assert(last_used_a == c_time && last_used_o == c_time, "EOS account has been used to authorise transactions");
 }
 
+void lostcontract::assert_whitelisted(name account) {
+    whitelist_table whitelist(name(WHITELIST_CONTRACT), _self.value);
+    whitelist.get(account.value, "Account is not whitelisted");
+}
+
 std::string lostcontract::bytetohex(unsigned char *data, int len) {
     constexpr char hexmap[] = {'0', '1', '2', '3', '4', '5', '6', '7',
                                '8', '9', 'a', 'b', 'c', 'd', 'e', 'f'};
@@ -265,5 +240,5 @@ std::string lostcontract::bytetohex(unsigned char *data, int len) {
 
 
 EOSIO_DISPATCH( lostcontract,
-(add)(updateauth)(verify)(reset)(clear)(useaccount)(notify)
+(updateauth)(verify)(reset)(clear)(useaccount)(notify)
 )

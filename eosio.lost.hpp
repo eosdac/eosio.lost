@@ -17,8 +17,8 @@ typedef std::string ethereum_address;
 #ifndef WAITING_PERIOD
 #define WAITING_PERIOD 60 * 60 * 24 * 30
 #endif
-#ifndef PROPOSAL_EXPIRY
-#define PROPOSAL_EXPIRY 60 * 60 * 24 * 30
+#ifndef WHITELIST_CONTRACT
+#define WHITELIST_CONTRACT "whitelist111"
 #endif
 
 
@@ -59,14 +59,12 @@ private:
     typedef multi_index<"whitelist"_n, whitelist_info> whitelist_table;
 
     void assert_unused(name account);
+    void assert_whitelisted(name account);
+    std::string bytetohex(unsigned char *data, int len);
 
 public:
 
     using contract::contract;
-
-    ACTION add(name address, string eth_address, asset value);
-
-    ACTION remove(name account);
 
     ACTION updateauth(name claimer);
 
@@ -80,9 +78,6 @@ public:
 
     ACTION clear();
 
-private:
-
-    std::string bytetohex(unsigned char *data, int len);
 };
 
 
