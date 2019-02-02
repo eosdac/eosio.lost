@@ -22,7 +22,7 @@ The purpose of this contract is to allow EOS account holders to reset their gene
 - Anyone may then call the `updateauth` action which will again verify that there has been no activity on the account.
 - The active and owner keys will then be automatically updated.  The user will now be able to access their account using the new key.
 
-## Whitelist generation
+## Whitelist Generation
 
 The lost key contract relies on data from another contract which includes a pre-defined whitelist of ETH address/EOS account pairings.
 
@@ -31,3 +31,10 @@ The process for generating the whitelist is as follows;
 - Start with the original EOS genesis import file.
 - Remove any accounts containing 100,000 or more tokens.
 - Check each row and remove any where the EOS account has shown activity.  This is determined by reading the `cpu_limit.used` property of the account.
+
+## Whitelist Population
+
+A whitelist will be loaded into the data of another contract and the eosio.lost contract will read data from that.  The data in the whitelist account will be verified and then the account will be resigned to `eosio`.
+
+This is done to prevent us needing to create many msig proposals which have to be approved by the block producers.
+
