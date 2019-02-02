@@ -2,7 +2,6 @@
 #include <eosiolib/print.hpp>
 #include "trezor-crypto/base58.c"
 #include "trezor-crypto/memzero.c"
-#include "trezor-crypto/ripemd160.c"
 
 
 void lostcontract::updateauth(name claimer) {
@@ -70,10 +69,9 @@ void lostcontract::verify(std::vector<char> sig, name account, public_key newpub
     unsigned char to_encode[37];
     memcpy(to_encode, pkeycopy.data.data(), 33);
 
-    // add ripemd160 checksum to end of key
-    uint8_t hash_output[20];
-    ripemd160((uint8_t *)pkeycopy.data.begin(), 33, hash_output);
-    memcpy(to_encode + 33, hash_output, 4);
+    // Calculate and concatenate checksum
+    checksum160 checksum = ripemd160((const char *)pkeycopy.data.begin(), 33);
+    memcpy(to_encode + 33, checksum.extract_as_byte_array().data(), 4);
 
     // convert to base58
     char b58[51];
@@ -93,6 +91,8 @@ void lostcontract::verify(std::vector<char> sig, name account, public_key newpub
 
     assert_whitelisted(account);
 
+    // Make sure the account hasn't been used
+    assert_unused(account);
 
     /////////////////////////
     // Verify signature
@@ -101,7 +101,7 @@ void lostcontract::verify(std::vector<char> sig, name account, public_key newpub
     sha3_ctx shactx;
     capi_checksum256 msghash;
     char tmpmsg[128];
-    sprintf(tmpmsg, "%u,%u,I lost my EOS genesis key and I request a key reset to %s", tapos_block_num(), tapos_block_prefix(), b58);
+    sprintf(tmpmsg, "%u,%u,I lost my EOS genesis key and I request a key reset to EOS%s", tapos_block_num(), tapos_block_prefix(), b58);
 
     //Add prefix and length of signed message
     char message[128];
@@ -215,8 +215,14 @@ void lostcontract::clear(){
 
 void lostcontract::assert_unused(name account) {
     int64_t last_used_a = get_permission_last_used(account.value, "active"_n.value);
+//    print(" last_used_a ");
+//    print(last_used_a);
     int64_t last_used_o = get_permission_last_used(account.value, "owner"_n.value);
+//    print(" last_used_o ");
+//    print(last_used_o);
     int64_t c_time = get_account_creation_time(account.value);
+//    print(" c_time ");
+//    print(c_time);
 
     eosio_assert(last_used_a == c_time && last_used_o == c_time, "EOS account has been used to authorise transactions");
 }
