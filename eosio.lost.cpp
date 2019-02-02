@@ -145,7 +145,7 @@ void lostcontract::verify(std::vector<char> sig, name account, public_key newpub
     eosio_assert( white_it != whitelist.end(), "Account is not in the whitelist");
 
     // verify calculated address matches whitelist
-    std::string lowercase_whitelist = white_it->eth_address;
+    std::string lowercase_whitelist = string(white_it->eth_address.begin(), white_it->eth_address.end());
     std::for_each(lowercase_whitelist.begin(), lowercase_whitelist.end(), [](char & c){
         c = tolower(c);
     });
