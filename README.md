@@ -11,7 +11,7 @@ The purpose of this contract is to allow EOS account holders to reset their gene
 - **Only one reset will be allowed per account.**  Once you have reset the keys, the account will be marked and no further recoveries will be permitted.
 - **The account holder must wait 30 days before the keys are reset following the verification.**  The account being modified will be sent a message indicating that their account is due for reset, during the 30 day period the key holder can make a transaction on the account to block the key change.
 - **Your Ethereum account must not show clear signs of being attacked and drained.** We will run scripts designed to detect hacked Ethereum accounts and remove them from the whitelist.
-- **The account must control less than 100,000 EOS tokens**.  Accounts containing 1 million or more tokens will be removed from the automated whitelist.
+- **The account must control less than 100,000 EOS tokens**.  Accounts containing 100,000 or more tokens will be removed from the automated whitelist.
 
 ## Procedure
 
