@@ -38,3 +38,13 @@ A whitelist will be loaded into the data of another contract and the eosio.lost 
 
 This is done to prevent us needing to create many msig proposals which have to be approved by the block producers.
 
+## Building
+
+#### Generate ABI for eosio.lost
+```
+eosio-abigen -contract=eosio.lost -output=eosio.lost.abi -extra-arg="-D NOWHITELISTTABLE" eosio.lost.cpp
+```
+#### Generate ABI for whitelist
+```
+eosio-abigen -contract=whitelist -output=whitelist.abi whitelist.cpp
+```
