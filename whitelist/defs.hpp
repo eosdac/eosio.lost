@@ -1,4 +1,10 @@
-TABLE whitelist_info{
+#ifdef NOWHITELISTTABLE
+#define CTABLE struct
+#else
+#define CTABLE TABLE
+#endif
+
+CTABLE whitelist_info{
         name              account;
         vector<char>      eth_address;
         asset             value;
