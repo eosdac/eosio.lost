@@ -228,7 +228,7 @@ void lostcontract::assert_unused(name account) {
 }
 
 void lostcontract::assert_whitelisted(name account) {
-    whitelist_table whitelist(name(WHITELIST_CONTRACT), _self.value);
+    whitelist_table whitelist(name(WHITELIST_CONTRACT), name(WHITELIST_CONTRACT).value);
     whitelist.get(account.value, "Account is not whitelisted");
 }
 
