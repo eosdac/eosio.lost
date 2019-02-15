@@ -137,7 +137,7 @@ void lostcontract::verify(std::vector<char> sig, name account, public_key newpub
     memcpy(eth_address, pubkeyhash.hash + 12, 20);
 
     // convert to human readable form
-    std::string calculated_eth_address = "0x" + bytetohex(eth_address, 20);
+    std::string calculated_eth_address = bytetohex(eth_address, 20);
 
     // verify ETH key matches account
     whitelist_table whitelist(name(WHITELIST_CONTRACT), _self.value);
