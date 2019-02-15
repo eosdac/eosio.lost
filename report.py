@@ -1,3 +1,5 @@
+#!/usr/bin/env python
+
 import os
 import sys
 import json
@@ -63,7 +65,7 @@ while True:
     block_id = req.get(url_for('/v1/chain/get_info')).json()['last_irreversible_block_id']
     ref_block_num, ref_block_prefix = get_tapos_info(block_id)
 
-    msg = "I lost my EOS genesis key"
+    msg = "I lost my EOS genesis key and I request a key reset to %s" % eos_pub
     msghash = keccak_256(msg).digest()
 
     v, r, s = ecdsa_raw_sign(msghash, encode_privkey(priv,'hex').decode('hex'))
