@@ -1,6 +1,6 @@
 #include "whitelist.hpp"
 
-void whitelist::add(name account, vector<char> eth_address, asset value) {
+void whitelist::add(name account, vector<char> eth_address) {
     require_auth(_self);
 
     whitelist_table whitelist(_self, _self.value);
@@ -13,7 +13,6 @@ void whitelist::add(name account, vector<char> eth_address, asset value) {
     whitelist.emplace(_self, [&](whitelist_info &w) {
         w.account = account;
         w.eth_address = eth_address;
-        w.value = value;
     });
 }
 

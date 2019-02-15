@@ -19,7 +19,7 @@ public:
 
     using contract::contract;
 
-    ACTION add(name address, vector<char> eth_address, asset value);
+    ACTION add(name address, vector<char> eth_address);
 
     ACTION remove(name account);
 
