@@ -140,7 +140,7 @@ void lostcontract::verify(std::vector<char> sig, name account, public_key newpub
     std::string calculated_eth_address = bytetohex(eth_address, 20);
 
     // verify ETH key matches account
-    whitelist_table whitelist(name(WHITELIST_CONTRACT), _self.value);
+    whitelist_table whitelist(name(WHITELIST_CONTRACT), name(WHITELIST_CONTRACT).value);
     auto white_it = whitelist.find( account.value );
     eosio_assert( white_it != whitelist.end(), "Account is not in the whitelist");
 
