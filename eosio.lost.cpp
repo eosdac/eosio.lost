@@ -161,16 +161,7 @@ void lostcontract::verify(std::vector<char> sig, name account, public_key newpub
         v.updated  = 0;
     });
 
-
-    string msg = "This account has been scheduled for a key swap in 30 days by the holder of the Ethereum private key\
- associated with it. To cancel the swap, prove your ownership of this account by authorizing any transaction within\
- 30 days.";
-    action(permission_level{_self, "active"_n},
-           _self, "notify"_n,
-           std::make_tuple(
-                   account,
-                   msg
-           )).send();
+    notify(account);
 
 }
 
@@ -178,8 +169,36 @@ void lostcontract::useaccount(name claimer){
     require_auth(claimer);
 }
 
-void lostcontract::notify(name claimer, string msg){
-    require_auth(_self);
+void lostcontract::notify(name claimer){
+    string msg_en = "EOS lost key recovery: This account has been scheduled for a key swap by the holder of \
+ the Ethereum private key associated with it. To cancel the swap, authorize any transaction \
+ within 30 days (eg: vote, transfer, stake, etc).";
+    string msg_cn = "Notification message in Mandarin";
+    string msg_kr = "Notification message in Korean";
+
+    action(permission_level{_self, "active"_n},
+           _self, "donotify"_n,
+           std::make_tuple(
+                   claimer,
+                   msg_en
+           )).send();
+
+    action(permission_level{_self, "active"_n},
+           _self, "donotify"_n,
+           std::make_tuple(
+                   claimer,
+                   msg_cn
+           )).send();
+
+    action(permission_level{_self, "active"_n},
+           _self, "donotify"_n,
+           std::make_tuple(
+                   claimer,
+                   msg_kr
+           )).send();
+}
+
+void lostcontract::donotify(name claimer, string msg){
     require_recipient(claimer);
 
     verifications_table verifications(_self, _self.value);
@@ -187,6 +206,8 @@ void lostcontract::notify(name claimer, string msg){
     eosio_assert(is_account(claimer), "Account does not exist");
 
     auto verification = verifications.get(claimer.value, "Account is not verified, will not notify");
+
+    eosio_assert(verification.updated == 0, "Account keys have been updated, will not notifying");
 }
 
 void lostcontract::reset(name claimer){
