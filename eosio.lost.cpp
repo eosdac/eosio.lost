@@ -173,8 +173,8 @@ void lostcontract::notify(name claimer){
     string msg_en = "EOS lost key recovery: This account has been scheduled for a key swap by the holder of \
  the Ethereum private key associated with it. To cancel the swap, authorize any transaction \
  within 30 days (eg: vote, transfer, stake, etc).";
-    string msg_cn = "Notification message in Mandarin";
-    string msg_kr = "Notification message in Korean";
+    string msg_cn = "恢复EOS丢失密钥：此帐户已安排由与其关联的以太坊私钥的持有者进行密钥交换。 要取消交换，请在30天内授权交易（例如：通过投票，转让，投注等）。";
+    string msg_kr = "이오스 분실키 복구: 이 계정은 여결된 이더리움 프라이빗 키 홀더의 결정에 따라 키 교환을 예정 중 입니다. 교환을 취소하기 위해선, 30일내에 거래를 재가하세요. (예: 투표, 코인 전송, 스테이킹 등등)";
 
     action(permission_level{_self, "active"_n},
            _self, "donotify"_n,
