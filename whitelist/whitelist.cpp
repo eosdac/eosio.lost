@@ -17,7 +17,7 @@ void whitelist::add(name account, vector<char> eth_address) {
 }
 
 void whitelist::remove(name account) {
-    require_auth(_self);
+    assert_minor_bp_auth();
 
     whitelist_table whitelist(_self, _self.value);
 
@@ -30,13 +30,17 @@ void whitelist::remove(name account) {
 }
 
 void whitelist::clear(){
-    assert_minor_bp_auth();
+    require_auth(_self);
 
     whitelist_table whitelist(_self, _self.value);
 
+    uint16_t i = 0;
     auto itr = whitelist.begin();
-    while (itr != whitelist.end()){
+    eosio_assert(itr != whitelist.end(), "Table is empty");
+
+    while (itr != whitelist.end() && i <= 500){
         itr = whitelist.erase(itr);
+        i++;
     }
 }
 
