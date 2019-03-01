@@ -29,8 +29,18 @@ void whitelist::remove(name account) {
     whitelist.erase(existing);
 }
 
+void whitelist::clear(){
+    require_auth(_self);
+
+    whitelist_table whitelist(_self, _self.value);
+
+    auto itr = whitelist.begin();
+    while (itr != whitelist.end()){
+        itr = whitelist.erase(itr);
+    }
+}
 
 
 EOSIO_DISPATCH( whitelist,
-(add)(remove)
+(add)(remove)(clear)
 )
