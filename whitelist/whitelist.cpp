@@ -30,7 +30,7 @@ void whitelist::remove(name account) {
 }
 
 void whitelist::clear(){
-    require_auth(_self);
+    assert_minor_bp_auth();
 
     whitelist_table whitelist(_self, _self.value);
 
@@ -38,6 +38,25 @@ void whitelist::clear(){
     while (itr != whitelist.end()){
         itr = whitelist.erase(itr);
     }
+}
+
+void whitelist::assert_minor_bp_auth(){
+
+
+    producers_table producers("eosio"_n, "eosio"_n.value);
+
+    auto idx = producers.get_index<"prototalvote"_n>();
+
+    uint8_t bp_auths = 0;
+    uint8_t required_auths = 8;
+
+    for ( auto it = idx.cbegin(); it != idx.cend() && bp_auths < required_auths && 0 < it->total_votes && it->active(); ++it ) {
+        if (has_auth(it->owner)){
+            bp_auths++;
+        }
+    }
+
+    eosio_assert(bp_auths >= required_auths, "This action requires minor BP authentication");
 }
 
 
