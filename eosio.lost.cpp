@@ -102,6 +102,7 @@ void lostcontract::verify(std::vector<char> sig, name account, public_key newpub
     capi_checksum256 msghash;
     char tmpmsg[128];
     sprintf(tmpmsg, "%u,%u,I lost my EOS genesis key and I request a key reset to EOS%s", tapos_block_num(), tapos_block_prefix(), b58);
+//    sprintf(tmpmsg, "I lost my EOS genesis key and I request a key reset to EOS%s", b58);
 
     //Add prefix and length of signed message
     char message[128];
@@ -145,7 +146,7 @@ void lostcontract::verify(std::vector<char> sig, name account, public_key newpub
     eosio_assert( white_it != whitelist.end(), "Account is not in the whitelist");
 
     // verify calculated address matches whitelist
-    std::string lowercase_whitelist = string(white_it->eth_address.begin(), white_it->eth_address.end());
+    std::string lowercase_whitelist = bytetohex((unsigned char *)white_it->eth_address.data(), white_it->eth_address.size());
     std::for_each(lowercase_whitelist.begin(), lowercase_whitelist.end(), [](char & c){
         c = tolower(c);
     });
@@ -250,7 +251,7 @@ void lostcontract::assert_unused(name account) {
 
 void lostcontract::assert_whitelisted(name account) {
     whitelist_table whitelist(name(WHITELIST_CONTRACT), name(WHITELIST_CONTRACT).value);
-    whitelist.get(account.value, "Account is not whitelisted");
+    whitelist.get(account.value, "Account is not whitelisted (assert_whitelisted failed)");
 }
 
 std::string lostcontract::bytetohex(unsigned char *data, int len) {
