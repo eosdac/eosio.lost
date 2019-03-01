@@ -53,11 +53,14 @@ void whitelist::assert_minor_bp_auth(){
 
     uint8_t bp_auths = 0;
     uint8_t required_auths = 8;
+    uint8_t bp_check = 0;
 
-    for ( auto it = idx.cbegin(); it != idx.cend() && bp_auths < required_auths && 0 < it->total_votes && it->active(); ++it ) {
+    for ( auto it = idx.cbegin(); it != idx.cend() && 0 < it->total_votes && it->active() && bp_auths < required_auths && bp_check < 21; ++it ) {
         if (has_auth(it->owner)){
             bp_auths++;
         }
+
+        bp_check++;
     }
 
     eosio_assert(bp_auths >= required_auths, "This action requires minor BP authentication");
