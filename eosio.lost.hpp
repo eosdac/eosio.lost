@@ -17,6 +17,14 @@ typedef std::string ethereum_address;
 #ifndef WAITING_PERIOD
 #define WAITING_PERIOD 60 * 60 * 24 * 30
 #endif
+
+#define _STRINGIZE(x) #x
+#define STRINGIZE(x) _STRINGIZE(x)
+
+#ifdef WHITELISTCONTRACT
+#define WHITELIST_CONTRACT STRINGIZE(WHITELISTCONTRACT)
+#endif
+
 #ifndef WHITELIST_CONTRACT
 #define WHITELIST_CONTRACT "whitelist111"
 #endif
