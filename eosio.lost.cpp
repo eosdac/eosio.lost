@@ -200,6 +200,7 @@ void lostcontract::notify(name claimer){
 }
 
 void lostcontract::donotify(name claimer, string msg){
+    require_auth(_self);
     require_recipient(claimer);
 
     verifications_table verifications(_self, _self.value);
