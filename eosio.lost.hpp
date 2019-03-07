@@ -73,7 +73,7 @@ public:
 
     ACTION notify(name claimer);
 
-    void donotify(name claimer, string msg);
+    ACTION donotify(name claimer, string msg);
 
     ACTION clear();
 
