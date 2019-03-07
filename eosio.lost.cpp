@@ -209,7 +209,7 @@ void lostcontract::donotify(name claimer, string msg){
 
     auto verification = verifications.get(claimer.value, "Account is not verified, will not notify");
 
-    eosio_assert(verification.updated == 0, "Account keys have been updated, will not notifying");
+    eosio_assert(verification.updated == 0, "Account keys have been updated, will not notify");
 }
 
 void lostcontract::reset(name claimer){
