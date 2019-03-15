@@ -6,6 +6,8 @@
   "dependencies": {
     "csv-parser": "^2.1.0",
     "eosjs": "^20.0.0-beta3",
-    "fs": "^0.0.1-security"
+    "fs": "^0.0.1-security",
+    "csvtojson": "^2.0.8",
+    "request": "^2.88.0"
   }
 }
