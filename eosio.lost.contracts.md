@@ -4,11 +4,15 @@ Input parameters:
 
 * `claimer` (The name of the account requesting update)
 
+Implied parameters:
+
+* `signer` (The name of the account signing this action on behalf of `claimer`)
+
 ## Intent
 
-The intent of the `updateauth` action is to designate owner and active permissions to the recorded EOS public key associated with an EOS account, {{ claimer }}, registered on the `verified` database for longer than 30 days, so long as the public key provided in the genesis snapshot for the account {{ claimer }} has never signed a transaction.
+By calling the action `updateauth`, I, {{ signer }}, wish to have the `owner` and `active` permissions of EOS account {{ claimer }} changed to the EOS public key provided previously using the `verify` action. The threshold of both permissions shall be set to `1`, and the EOS public key shall be given a weight of `1`. 
 
-As an authorized party, I {{ signer }}, wish to update owner and active permissions for EOS {{ claimer }} to the EOS public key provided previously in the `verify` action. 
+I, {{ signer }}, acknowledge that the keys cannot be changed unless a waiting period of at least 30 days has elapsed since the `verify` action was called, and that no transactions can have been authorized by the EOS account {{ claimer }} at any point. I acknowledge that any account can be used to call the `updateauth` action to authorize this action.
 
 
 <h1 class="contract">verify</h1>
@@ -20,12 +24,16 @@ Input parameters:
 * `newpubkey` (The new EOS public key)
 * `rampayer` (This account will have to store the verification data in their RAM)
 
+Implied paramters:
+
+* `signer` (The name of the account signing this action on behalf of `claimer`)
+
 ## Intent
 
-The intent of the `verify` action is to record the EOS account name, verification date, and a new EOS public key selected by the party whose Ethereum key of the `sig` parameter matches the one linked to that EOS account, so long as the account is on the unused genesis account list. If there continues to be no activity on the recorded EOS account for the following 30 days, its owner and active key will be swapped with the new EOS public key using the `updateauth` action.
+As an authorized party, I {{ signer }}, have provided the Ethereum signature, {{ sig }}, associated with EOS account {{ account }} as per the genesis snapshot. I have confirmed that {{ account }} is listed on the unused genesis account list (also known as the whitelist) and has not authorized any transactions since genesis of the EOS mainnet of chain ID: aca376f206b8fc25a6ed44dbdc66547c36c6c33e3a119ffbeaef943642f0e906.
 
-As an authorized party, I {{ signer }}, have provided the Ethereum signature: {{signature}} associated with EOS account: {{ account }} as per the genesis snapshot and have confirmed the EOS account is on the unused genesis account list and has no activity.
+I, {{ signer }}, wish to submit the public key {{ newpubkey }}. The RAM required to store this information shall be paid for by my EOS account, {{ rampayer }}.
 
-I wish to record the EOS public key {{ newpubkey }} and understand that anyone can call the `updateauth` action 30 days from the date of the block where the `verify` action is included, and, unless new transactions are authorized on EOS account, {{ account }}, within that time, the public key will be changed to the one provided. 
+By calling the `verify` action, the 30-day waiting period shall be commenced, and this period must be satisfied before the `updateauth` action can be succesfully called, if and only if the checks of that action have been satisfied.
 
-As signer, I stipulate that I am, or have been authorized to take this action by, the party submitting the cryptographic proof in the `sig` input parameter.
+I, {{ signer }}, stipulate that I am, or have been authorized to take this action by the party submitting the cryptographic proof in the `sig` input parameter.
