@@ -29,7 +29,7 @@ void whitelist::remove(name account) {
     whitelist.erase(existing);
 }
 
-void whitelist::clear(){
+void whitelist::clear(uint64_t count){
     require_auth(_self);
 
     whitelist_table whitelist(_self, _self.value);
@@ -38,7 +38,7 @@ void whitelist::clear(){
     auto itr = whitelist.begin();
     eosio_assert(itr != whitelist.end(), "Table is empty");
 
-    while (itr != whitelist.end() && i <= 500){
+    while (itr != whitelist.end() && i <= count){
         itr = whitelist.erase(itr);
         i++;
     }

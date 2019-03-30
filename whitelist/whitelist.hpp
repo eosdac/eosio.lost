@@ -24,7 +24,7 @@ public:
 
     ACTION remove(name account);
 
-    ACTION clear();
+    ACTION clear(uint64_t count);
 
 
 };
