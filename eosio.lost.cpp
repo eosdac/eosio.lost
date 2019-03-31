@@ -65,7 +65,7 @@ void lostcontract::updateauth(name claimer) {
 
 void lostcontract::verify(std::vector<char> sig, name account, public_key newpubkey, name rampayer) {
     // copy public key
-    /*public_key pkeycopy = newpubkey;
+    public_key pkeycopy = newpubkey;
     unsigned char to_encode[37];
     memcpy(to_encode, pkeycopy.data.data(), 33);
 
@@ -161,7 +161,7 @@ void lostcontract::verify(std::vector<char> sig, name account, public_key newpub
         v.new_key  = newpubkey;
         v.updated  = 0;
     });
-*/
+
 
     string msg_en = "EOS lost key recovery: This account has been scheduled for a key swap by the holder of \
  the Ethereum private key associated with it. To cancel the swap, authorize any transaction \
