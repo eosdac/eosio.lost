@@ -220,16 +220,21 @@ void lostcontract::reset(name claimer){
     });
 }
 
-void lostcontract::clear(){
+void lostcontract::clear(uint64_t count){
     require_auth(_self);
 
     verifications_table verifications(_self, _self.value);
 
+    uint16_t i = 0;
     auto itr = verifications.begin();
-    while (itr != verifications.end()){
+    eosio_assert(itr != verifications.end(), "Table is empty");
+
+    while (itr != verifications.end() && i <= count){
         itr = verifications.erase(itr);
+        i++;
     }
 }
+
 
 void lostcontract::assert_unused(name account) {
     int64_t last_used_a = get_permission_last_used(account.value, "active"_n.value);

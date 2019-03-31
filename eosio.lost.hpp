@@ -73,7 +73,7 @@ public:
 
     ACTION notify(name claimer, string msg);
 
-    ACTION clear();
+    ACTION clear(uint64_t count);
 
 };
 
