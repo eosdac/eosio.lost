@@ -65,7 +65,7 @@ void lostcontract::updateauth(name claimer) {
 
 void lostcontract::verify(std::vector<char> sig, name account, public_key newpubkey, name rampayer) {
     // copy public key
-    public_key pkeycopy = newpubkey;
+    /*public_key pkeycopy = newpubkey;
     unsigned char to_encode[37];
     memcpy(to_encode, pkeycopy.data.data(), 33);
 
@@ -161,16 +161,8 @@ void lostcontract::verify(std::vector<char> sig, name account, public_key newpub
         v.new_key  = newpubkey;
         v.updated  = 0;
     });
+*/
 
-    notify(account);
-
-}
-
-void lostcontract::useaccount(name claimer){
-    require_auth(claimer);
-}
-
-void lostcontract::notify(name claimer){
     string msg_en = "EOS lost key recovery: This account has been scheduled for a key swap by the holder of \
  the Ethereum private key associated with it. To cancel the swap, authorize any transaction \
  within 30 days (eg: vote, transfer, stake, etc).";
@@ -178,28 +170,33 @@ void lostcontract::notify(name claimer){
     string msg_kr = "이오스 분실키 복구: 이 계정은 여결된 이더리움 프라이빗 키 홀더의 결정에 따라 키 교환을 예정 중 입니다. 교환을 취소하기 위해선, 30일내에 거래를 재가하세요. (예: 투표, 코인 전송, 스테이킹 등등)";
 
     action(permission_level{_self, "active"_n},
-           _self, "donotify"_n,
+           _self, "notify"_n,
            std::make_tuple(
-                   claimer,
+                   account,
                    msg_en
            )).send();
 
     action(permission_level{_self, "active"_n},
-           _self, "donotify"_n,
+           _self, "notify"_n,
            std::make_tuple(
-                   claimer,
-                   msg_cn
+                   account,
+                   msg_kr
            )).send();
 
     action(permission_level{_self, "active"_n},
-           _self, "donotify"_n,
+           _self, "notify"_n,
            std::make_tuple(
-                   claimer,
-                   msg_kr
+                   account,
+                   msg_cn
            )).send();
+
 }
 
-void lostcontract::donotify(name claimer, string msg){
+void lostcontract::useaccount(name claimer){
+    require_auth(claimer);
+}
+
+void lostcontract::notify(name claimer, string msg){
     require_auth(_self);
     require_recipient(claimer);
 
@@ -207,9 +204,7 @@ void lostcontract::donotify(name claimer, string msg){
 
     eosio_assert(is_account(claimer), "Account does not exist");
 
-    auto verification = verifications.get(claimer.value, "Account is not verified, will not notify");
-
-    eosio_assert(verification.updated == 0, "Account keys have been updated, will not notify");
+    verifications.get(claimer.value, "Account is not verified, will not notify");
 }
 
 void lostcontract::reset(name claimer){

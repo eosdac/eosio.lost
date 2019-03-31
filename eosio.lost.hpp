@@ -71,9 +71,7 @@ public:
 
     ACTION useaccount(name claimer);
 
-    ACTION notify(name claimer);
-
-    ACTION donotify(name claimer, string msg);
+    ACTION notify(name claimer, string msg);
 
     ACTION clear();
 
