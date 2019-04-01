@@ -21,8 +21,6 @@ void whitelist::remove(name account) {
 
     whitelist_table whitelist(get_self(), get_self().value);
 
-    eosio_assert(is_account(account), "Account does not exist");
-
     auto existing = whitelist.find(account.value);
     eosio_assert(existing != whitelist.end(), "Account is not on the whitelist");
 
