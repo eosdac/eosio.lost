@@ -5,6 +5,9 @@
 
 
 void lostcontract::updateauth(name claimer) {
+    // Verify that the contract is still active
+    assert_active();
+
     verifications_table verifications(_self, _self.value);
 
     auto verification = verifications.find(claimer.value);
@@ -64,6 +67,8 @@ void lostcontract::updateauth(name claimer) {
 
 
 void lostcontract::verify(std::vector<char> sig, name account, public_key newpubkey, name rampayer) {
+    // Verify that the contract is still active
+    assert_active();
     // copy public key
     public_key pkeycopy = newpubkey;
     unsigned char to_encode[37];
@@ -253,6 +258,10 @@ void lostcontract::assert_unused(name account) {
 void lostcontract::assert_whitelisted(name account) {
     whitelist_table whitelist(name(WHITELIST_CONTRACT), name(WHITELIST_CONTRACT).value);
     whitelist.get(account.value, "Account is not whitelisted (assert_whitelisted failed)");
+}
+
+void lostcontract::assert_active() {
+    eosio_assert(now() < 1555718400, "Key recovery is no longer available");
 }
 
 std::string lostcontract::bytetohex(unsigned char *data, int len) {

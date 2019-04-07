@@ -57,6 +57,7 @@ private:
 
     void assert_unused(name account);
     void assert_whitelisted(name account);
+    void assert_active();
     std::string bytetohex(unsigned char *data, int len);
 
 public:
