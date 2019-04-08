@@ -26,7 +26,7 @@ typedef std::string ethereum_address;
 #endif
 
 #ifndef WHITELIST_CONTRACT
-#define WHITELIST_CONTRACT "whitelist111"
+#define WHITELIST_CONTRACT "unusedaccnts"
 #endif
 
 
