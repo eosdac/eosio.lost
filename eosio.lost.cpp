@@ -5,9 +5,6 @@
 
 
 void lostcontract::updateauth(name claimer) {
-    // Verify that the contract is still active
-    assert_active();
-
     verifications_table verifications(_self, _self.value);
 
     auto verification = verifications.find(claimer.value);
