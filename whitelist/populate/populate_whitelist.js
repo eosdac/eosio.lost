@@ -70,5 +70,5 @@ const parser = csv({
     });
 
 
-fs.createReadStream('./whitelist.csv')
+fs.createReadStream('./snapshot.csv')
     .pipe(parser);
