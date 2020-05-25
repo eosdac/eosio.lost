@@ -258,7 +258,7 @@ void lostcontract::assert_whitelisted(name account) {
 }
 
 void lostcontract::assert_active() {
-    eosio_assert(now() < 1587340800, "Key recovery is no longer available");
+    eosio_assert(now() < 1622505600, "Key recovery is no longer available");
 }
 
 std::string lostcontract::bytetohex(unsigned char *data, int len) {
