@@ -89,7 +89,7 @@ void lostcontract::verify(std::vector<char> sig, name account, public_key newpub
 
 
     auto verification = verifications.find(account.value);
-    eosio_assert(verification == verifications.end(), "Account already verified");
+    eosio_assert(verification == verifications.end() || verification->updated == 0, "Account has already been updated");
 
     assert_whitelisted(account);
 
@@ -157,12 +157,20 @@ void lostcontract::verify(std::vector<char> sig, name account, public_key newpub
     eosio_assert( calculated_eth_address == lowercase_whitelist, "Message was not properly signed by the ETH key for the account" );
 
     // Once all checks have passed, store the key change information
-    verifications.emplace(rampayer, [&](verify_info &v){
-        v.claimer  = account;
-        v.added    = time_point_sec(now());
-        v.new_key  = newpubkey;
-        v.updated  = 0;
-    });
+    if (verification == verifications.end()) {
+        verifications.emplace(rampayer, [&](verify_info &v){
+            v.claimer  = account;
+            v.added    = time_point_sec(now());
+            v.new_key  = newpubkey;
+            v.updated  = 0;
+        });
+    } 
+    else {
+        verifications.modify(verification, rampayer, [&](verify_info &v){
+            v.added    = time_point_sec(now());
+            v.new_key  = newpubkey;
+        });
+    }
 
 
     string msg_en = "EOS lost key recovery: This account has been scheduled for a key swap by the holder of \
