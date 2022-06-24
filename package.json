@@ -5,7 +5,7 @@
   "main": "flag-hacked-eth.js",
   "dependencies": {
     "cheerio": "^1.0.0-rc.2",
-    "node-fetch": "^2.3.0",
+    "node-fetch": "^2.6.7",
     "web3": "^1.0.0-beta.37"
   },
   "devDependencies": {},
